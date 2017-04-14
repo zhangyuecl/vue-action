@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<meta name="Description" content="">
+		<meta name="keywords" content="">
+		<link rel="stylesheet" href="rise.css" />
+		<title>升级页面</title>
+		<script type="text/javascript" src="qa-rem.js"></script>
+		<script type="text/javascript" src="zepto.js"></script>
+		<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/vue/1.0.13/vue.min.js"></script>
+		<script src="//cdn.bootcss.com/vue-resource/1.0.3/vue-resource.js" type="text/javascript" charset="utf-8"></script>
+		<style>
+			.js-course {
+				overflow: hidden;
+			}
+			
+			[v-cloak] {
+				display: none;
+			}
+		</style>
+	</head>
+
+	<body id="content" >
+		<header>
+			<div class="header">
+				<a href="#" target="_blank"><i class="bg-icon"></i></a>
+				<div class="header-box ver-middle">
+					<span class="fl header-tab add" v-on:click="tab">单科</span>
+					<span class="fl header-tab" v-on:click="tab">全科</span>
+				</div>
+			</div>
+		</header>
+		<div style="width: 100%;overflow-x: hidden;">
+			<div class="slider-box clearfixs" v-cloak>
+				<!--全科-->
+				<div class="all-course js-course fl">
+					<div class="detail-banner" v-html="a.SingleSubject.ProductsIntro"></div>
+					<div class="all-box">
+						<p class="content-box price-tip beforico">{{a.SingleSubject.IncreasedPricesTips}}</p>
+					</div>
+					<div class="all-box bgw">
+						<div class="content-box">
+							<ul>
+								<product v-for="item in a.SingleSubject.List" :item='item' v-on:pitchs='pitcheach'></product>
+							</ul>
+						</div>
+					</div>
+
+				</div>
+				<!--单科-->
+				<div class="fl js-course single-course">
+					<div class="detail-banner" v-html="a.WholeSubject.ProductsIntro">
+					</div>
+					<div class="all-box">
+						<p class="content-box price-tip beforico">{{a.WholeSubject.IncreasedPricesTips}}</p>
+					</div>
+					<div class="all-box bgw">
+						<div class="content-box">
+							<ul>
+								<product v-for="item in a.WholeSubject.List" :item='item' v-on:pitchs='pitchTaoeach'></product>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+			<footer>
+				<div class="footer">
+					<span class="rt goto-pay" v-on:click="gotoPay">去支付</span>
+					<span class="rt now-price">现价￥<i class="total-old-price">{{TotalCur}}</i></span>
+					<span class="rt old-price">原价￥<i class="total-new-price">{{Total}}</i></span>
+				</div>
+			</footer>
+		</div>
+
+		<!--value值判断能否跳转-->
+		<input name="jump-course" type="hidden" value="1">
+		<script>
+			Array.prototype.indexOf = function(val) {
+				for(var i = 0; i < this.length; i++) {
+					if(this[i] == val) return i;
+				}
+				return -1;
+			};
+			Array.prototype.remove = function(val) {
+				var index = this.indexOf(val);
+				if(index > -1) {
+					this.splice(index, 1);
+				}
+			};
+		</script>
+	</body>
+	<script>
+		Vue.component('product', {
+			props: ['item'],
+			template: '<li class="click-list clearfix beforico" :old-price="item.Price" :new-price="item.CurrentPrice" v-on:click="pitch($event)" :products-id="item.ProductsId" :cognate-id="item.CognateId" :class="item.IsSelected?\'add\':\'\'"><span class="course-title fl width8 ">{{item.ProductsTitle}}</span><span class="course-price fl width2">￥{{item.CurrentPrice}}</span></li>',
+			methods: {
+				pitch: function(event) {					
+					this.$emit('pitchs',event);
+				}
+
+			}
+		});
+		var vm = new Vue({
+			el: '#content',
+			data: {
+				a: {},				
+				singleArray: new Array(),//选中的单科id数组
+				allArray:new Array(),//选中的全科id数组，结算时使用
+				singleTotalCur:0,//选中的单科现价
+				singleTotal:0,//选中的单科原价
+				allTotalCur:0,//选中的全科现价
+				allTotal:0,//选中的全科现价
+				tabIndex:0
+			},
+			created: function() {
+				this.get();
+			},
+			computed:{
+				//显示的现价
+				TotalCur: function(){
+					if(this.tabIndex==0){
+						return this.singleTotalCur/100;
+					}else if(this.tabIndex==1){
+						return this.allTotalCur/100;
+					}
+				},
+				//显示的原价
+				Total:function(){
+					if(this.tabIndex==0){						
+						return this.singleTotal/100;
+					}else if(this.tabIndex==1){
+						return this.allTotal/100;
+					}
+				}
+			},
+			methods: {
+				get: function() {
+					var that = this;
+					that.$http({ //调用接口
+						method: 'GET',
+						url: "rise.json" //this指data
+					}).then(function(response) { //接口返回数据
+						that.a =response.body.Data;
+						for(item in that.a.SingleSubject.List){
+							if(that.a.SingleSubject.List[item].IsSelected){
+								that.singleArray.push(that.a.SingleSubject.List[item].ProductsId.toLowerCase());
+								that.singleTotal+=that.a.SingleSubject.List[item].Price*100;
+								that.singleTotalCur+=that.a.SingleSubject.List[item].CurrentPrice*100;
+							}
+						}
+						for(item in that.a.WholeSubject.List){
+							if(that.a.WholeSubject.List[item].IsSelected){
+								that.allArray.push(that.a.WholeSubject.List[item].ProductsId.toLowerCase());
+								that.allTotal+=that.a.WholeSubject.List[item].Price*100;
+								that.allTotalCur+=that.a.WholeSubject.List[item].CurrentPrice*100;
+							}
+						}
+					}, function(error) {});
+				},
+				pitcheach: function(event) {
+					var el = event.currentTarget;
+					if($(el).is(".add")) {
+						$(el).removeClass("add");
+						this.singleTotal -= parseFloat($(el).attr('old-price'))*100;
+						this.singleTotalCur -= parseFloat($(el).attr('new-price'))*100;
+						this.singleArray.remove($(el).attr('products-id').toLowerCase());
+					} else {
+						$(el).addClass("add");
+						this.singleTotal += parseFloat($(el).attr('old-price'))*100;
+						this.singleTotalCur += parseFloat($(el).attr('new-price'))*100;
+						this.singleArray[this.singleArray.length] = $(el).attr('products-id').toLowerCase();
+						this.singleArray.sort();
+					}
+					this.compare();
+				},
+				pitchTaoeach: function(event) {
+					var el = event.currentTarget;
+					if($(el).is(".add")) {
+						$(el).removeClass("add");
+						this.allTotal -= parseFloat($(el).attr('old-price'))*100;
+						this.allTotalCur -= parseFloat($(el).attr('new-price'))*100;
+						this.allArray.remove($(el).attr('products-id').toLowerCase());
+					} else {
+						$(el).addClass("add");
+						this.allTotal += parseFloat($(el).attr('old-price'))*100;
+						this.allTotalCur += parseFloat($(el).attr('new-price'))*100;
+						this.allArray[this.allArray.length] = $(el).attr('products-id').toLowerCase();
+					}
+				},
+				compare:function(){//比较选中的单科是否正好是全科的一种
+					var that=this;
+					for(var i=0;i<that.a.WholeSubject.List.length;i++){
+						if(that.singleArray.toString()==that.a.WholeSubject.List[i].CognateId.toLowerCase().split(',').sort().toString()){
+							//如果所选单科==全科，切换到全科
+							$(".header-tab").eq(1).trigger('click');							
+							$('.single-course .content-box ul li').each(function(){
+								//把有选中状态的去掉选中状态，并减掉钱数
+								if($(this).hasClass('add')){
+									$(this).trigger('click');
+								}
+								//筛选中对应的全科
+								if($(this).attr("products-id").toLowerCase()==that.a.WholeSubject.List[i].ProductsId.toLowerCase()){
+									//出发相应全科的点击事件
+									$(this).trigger('click');
+								}
+							})
+							
+						}
+					}
+					
+				},
+				tab:function(event){
+					var el=event.currentTarget;
+					var indexN = $(el).index();
+					$(el).addClass("add").siblings().removeClass("add");
+					if(indexN == 1) {
+						$(".js-course").eq(0).css({
+							"transform": 'translate(-100%,0)'
+						}).siblings().css({
+							"transform": 'translate(-100%,0)'
+						});
+						this.tabIndex=1;
+					} else {
+						$(".js-course").eq(1).css({
+							"transform": 'translate(100%,0)'
+						}).siblings().css({
+							"transform": 'translate(0%,0)'
+						});
+						this.tabIndex=0;
+					}
+				},
+				//支付
+				gotoPay:function(){
+					if(this.tabIndex==0){//获取单科选中科目id
+						console.log(this.singleArray.toString())
+					}else if(this.tabIndex==1){//获取全科选中科目id
+						console.log(this.allArray.toString())
+					}
+				}
+			}
+		});
+	</script>
+
+</html>
