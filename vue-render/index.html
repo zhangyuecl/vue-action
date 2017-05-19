@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Document</title>
+    <script type="js/vue.js"></script>
+</head>
+<body>
+    <div class="box">
+        <div class="content">
+            <ul>
+
+            </ul>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+function bubbleSort(array) {
+    var val;
+    var count=0;
+    // body...
+    for (var j = 0; j < array.length-1; j++) {
+        for (var i = 0; i < array.length-j-1; i++) {
+            if(array[i]>array[i+1]){
+                val=array[i+1];
+                array[i+1]=array[i];
+                array[i]=val;
+            }
+            ++count;
+        }
+    }
+    console.log(count);
+    return array;
+}
+window.onload=function(){
+    var arr=[3,8,5,4,7,2,1,9,6,0];
+    console.log(bubbleSort(arr));
+
+}
+</script>
+</html>

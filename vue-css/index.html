@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+		<title></title>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript" src="js/velocity.min.js"></script>
+		<style>
+			.fade-enter-active,
+			.fade-leave-active {
+				transition: opacity .5s
+			}
+			
+			.fade-enter,
+			.fade-leapve-active {
+				opacity: 0
+			}
+			
+			.slide-fade-enter-active {
+				transition: all .3s ease;
+			}
+			
+			.slide-fade-leave-active {
+				transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+			}
+			
+			.slide-fade-enter,
+			.slide-fade-leave-active {
+				transform: translateX(10px);
+				opacity: 0;
+			}
+			.bounce-enter-active {
+  animation: bounce-in .5s;
+}
+.bounce-leave-active {
+  animation: bounce-out .5s;
+}
+@keyframes bounce-in {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes bounce-out {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+#demo{
+	border:1px solid #ccc;
+	-moz-box-shadow: 0 0 8px rgba(72, 106, 170, 0.5);
+    -webkit-box-shadow: 0 0 8px rgba(72, 106, 170, 0.5);
+    box-shadow: 0 0 8px rgba(72, 106, 170, 0.5);
+}
+#demo:hover{
+	animation: glow 1s infinite ease-in-out;
+	-webkit-animation-direction: alternate;
+}
+@keyframes glow{
+	0%{
+		box-shadow: 0 0 12px rgba(72, 106, 170, 0.5);
+		border-color: rgba(160, 179, 214, 0.5); 
+	}
+	100%{
+		box-shadow: 0 0 12px rgba(72, 106, 170, 1.0), 0 0 18px rgba(0, 140, 255, 1.0);
+		border-color: rgba(160, 179, 214,1); 
+	}
+}
+
+		</style>
+
+	</head>
+
+	<body>
+		<div id="demo">
+			<button v-on:click="show=!show">Toggle</button>
+			<!--<transition name="fade">
+				<p v-if="show">hello</p>
+			</transition>-->
+			<transition name="slide-fade">
+				<p v-if="show">hello</p>
+			</transition>
+			<transition v-on:before-enter="beforeEnter" v-on:enter="enter" v-on:after-enter="afterEnter" v-on:enter-cancelled="enterCancelled" v-on:before-leave="beforeLeave" v-on:leave="leave" v-on:after-leave="afterLeave" v-on:leave-cancelled="leaveCancelled" appear appear-class="custom-appear-class" appear-active-class="custom-appear-active-class">
+				<p v-if="show">hello</p>
+			</transition>
+<transition name="bounce">
+    <p v-if="show">Look at me!</p>
+  </transition>
+		</div>
+		<script>
+			var vm = new Vue({
+				el: "#demo",
+				data: {
+					show: true
+				},
+				methods: {
+					// --------
+					// 进入中,也就是显示
+					// --------
+					beforeEnter: function(el) {
+						// ...
+						el.style.opacity = 0
+						el.style.transformOrigin = 'left'
+						Velocity(el, {
+							opacity: 0
+						}, {
+							duration: 300
+						})
+						console.log("beforeEnter");
+					},
+					// 此回调函数是可选项的设置
+					// 与 CSS 结合时使用
+					enter: function(el, done) {
+						// ...
+						Velocity(el, {
+							opacity: 1,
+							fontSize: '1.4em'
+						}, {
+							duration: 300
+						})
+						Velocity(el, {
+							fontSize: '1em'
+						}, {
+							complete: done
+						})
+						console.log("enter")
+					},
+					afterEnter: function(el) {
+						// ...
+						Velocity(el, {
+							fontSize: '1.4em'
+						}, {
+							duration: 300
+						})
+						console.log("afterEnter")
+					},
+					enterCancelled: function(el) {
+						// ...
+						console.log("enterCancelled")
+					},
+					// --------
+					// 离开时
+					// --------
+					beforeLeave: function(el) {
+						// ...
+						console.log("beforeLeave")
+					},
+					// 此回调函数是可选项的设置
+					// 与 CSS 结合时使用
+					leave: function(el, done) {
+						// ...
+						Velocity(el, {
+							translateX: '15px',
+							rotateZ: '50deg'
+						}, {
+							duration: 600
+						})
+						Velocity(el, {
+							rotateZ: '100deg'
+						}, {
+							loop: 2
+						})
+						Velocity(el, {
+							rotateZ: '45deg',
+							translateY: '30px',
+							translateX: '30px',
+							opacity: 0
+						}, {
+							complete: done
+						})
+						console.log("leave")
+					},
+					afterLeave: function(el) {
+						// ...
+						console.log("afterLeave")
+					},
+					// leaveCancelled 只用于 v-show 中
+					leaveCancelled: function(el) {
+						// ...
+						console.log("leaveCancelled")
+					}
+				}
+			});
+		</script>
+	</body>
+
+</html>
